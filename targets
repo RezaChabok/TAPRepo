@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+import argparse
+import requests
+import json
+#auth : Authorization: Basic YmFkc2VjdG9yOkJzaXRQQ04=
+
+base_url = 'https://taprepo.pythonanywhere.com'
+Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04="}
+def get_all_subdomains():
+    response = requests.get(f'{base_url}/targets/all_subdomains', headers=Headers)
+    return [subdomain['address'] for subdomain in response.json()]
+
+def get_target(address):
+    response = requests.get(f'{base_url}/targets/', params={'address': address}, headers=Headers)
+    return response.json()
+
+def get_target_ips(address):
+    response = requests.get(f'{base_url}/targets/target_details', params={'address': address}, headers=Headers)
+    return [ip['ip'] for ip in response.json()['ips']]
+
+def add_target(address, name=None, subdomains=None, ips=None, cidrs=None, asns=None, behind_cdn=None, vulnerabilities=None):
+    data = {
+        'address': address,
+        'name': name,
+        'subdomains': subdomains,
+        'ips': ips,
+        'cidrs': cidrs,
+        'asns': asns,
+        'behind_cdn': behind_cdn,
+        'vulnerabilities': vulnerabilities
+    }
+    # Remove None values from data
+    data = {k: v for k, v in data.items() if v is not None}
+    response = requests.post(f'{base_url}/targets/', data=json.dumps(data), headers=Headers+{'Content-Type': 'application/json'})
+    return response.json()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Interact with target API.')
+
+    parser.add_argument('--all_subdomains', action='store_true', help='Get all subdomains')
+    parser.add_argument('--add', action='store_true', help='Add a new target')
+    parser.add_argument('--address', type=str, default=None, help='Address of the target')
+    parser.add_argument('--name', type=str, default=None, help='Name of the target')
+    parser.add_argument('--sub', type=str, default=None, help='Subdomains of the target')
+    parser.add_argument('--ip', type=str, default=None, help='IPs of the target')
+    parser.add_argument('--cidr', type=str, default=None, help='CIDRs of the target')
+    parser.add_argument('--asn', type=str, default=None, help='ASNs of the target')
+    parser.add_argument('--behind_cdn', type=bool, default=None, help='Whether the target is behind a CDN')
+    parser.add_argument('--vulnerabilities', type=str, default=None, help='Vulnerabilities of the target')
+
+    args = parser.parse_args()
+
+    if args.all_subdomains:
+        print('\n'.join(get_all_subdomains()))
+
+    elif args.add:
+        subdomains = json.loads(args.sub) if args.sub else None
+        ips = json.loads(args.ip) if args.ip else None
+        cidrs = json.loads(args.cidr) if args.cidr else None
+        asns = json.loads(args.asn) if args.asn else None
+        vulnerabilities = json.loads(args.vulnerabilities) if args.vulnerabilities else None
+        print(add_target(args.address, args.name, subdomains, ips, cidrs, asns, args.behind_cdn, vulnerabilities))
+
+    elif args.address:
+        flag = False
+        response = get_target(args.address)
+        if args.sub:
+            flag = True
+            print('\n'.join([subdomain['address'] for subdomain in response[0]["subdomains"]]))
+        if args.ip:
+            flag = True
+            print('\n'.join([ips['ip'] for ips in response[0]["ips"]]))
+        if args.cidr:
+            flag = True
+            print('\n'.join([cidr['ip'] for cidr in response[0]['cidrs']]))
+        if args.asn:
+            flag = True
+            print('\n'.join([asn['ip'] for asn in response[0]["asns"]]))
+        if not flag:print(response)
