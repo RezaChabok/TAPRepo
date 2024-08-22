@@ -6,8 +6,10 @@ import requests
 import json
 
 
-base_url = 'http://taprepo.pythonanywhere.com:8000'
-Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04="}
+base_url = 'https://taprepo.pythonanywhere.com'
+Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04=",
+            'Content-Type': 'application/json'
+            }
 import json
 
 def file_manager(file_name):
@@ -52,14 +54,14 @@ def add_parameter(name, type=None, site=None):
 
     data = {'name': name, 'type': type, 'site': site}
     data = {k: v for k, v in data.items() if v is not None}
-    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers+{'Content-Type': 'application/json'})
+    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers)
     return response.json()
 
 def add_parameters(params, type=None, site=None):
 
     data = {'params': json.loads(params), 'type': type, 'site': site}
     data = {k: v for k, v in data.items() if v is not None}
-    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers+{'Content-Type': 'application/json'})
+    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers)
     return response.json()
 
 if __name__ == "__main__":
