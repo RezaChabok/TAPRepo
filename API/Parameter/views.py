@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Parameter, Type, Site
 from .serializers import ParameterSerializer, TypeSerializer
-
+import json
 
 from rest_framework.exceptions import ValidationError
 
@@ -36,6 +36,24 @@ class ParameterViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     
     def create(self, request, *args, **kwargs):
+        params = request.data.get('params')
+        if params:
+            for param in params:
+                name = param['name']
+                parameter, created = Parameter.objects.get_or_create(name=name)
+
+                if 'site' in request.data:
+                    site, created = Site.objects.get_or_create(address=request.data.get('site'))
+                    parameter.site.add(site)
+                
+                if request.data.get('type') is not None:
+                    type, created = Type.objects.get_or_create(name=request.data.get('type'))
+                    parameter.type.add(type)
+                
+                parameter.save()
+            # serializer = self.get_serializer(parameter)
+            return Response({'done':'done'})
+            
         name = request.data.get('name')
         parameter, created = Parameter.objects.get_or_create(name=name)
 

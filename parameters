@@ -6,8 +6,36 @@ import requests
 import json
 
 
-base_url = 'http://taprepo.pythonanywhere.com'
+base_url = 'http://taprepo.pythonanywhere.com:8000'
 Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04="}
+import json
+
+def file_manager(file_name):
+    try:
+        with open(file_name, 'r') as file:
+            # Read all lines from the file
+            lines = file.readlines()
+    except FileNotFoundError:
+        print("file not found.")
+        return ""
+
+    # Initialize an empty list to store the parameters
+    parameters = []
+
+    # Iterate through each line in the file
+    for line in lines:
+        # Strip any leading/trailing whitespace and add the parameter to the list
+        if len(line.strip()) > 0:
+            parameters.append({"name": line.strip()})
+    
+    # Convert the list of dictionaries to a JSON string
+    result = json.dumps(parameters)
+    
+    return result
+
+
+
+
 def get_all_parameters():
     response = requests.get(f'{base_url}/parameters/', headers=Headers)
     return [param['name'] for param in response.json()]
@@ -21,9 +49,17 @@ def get_parameters_by_type(type_name):
     return [param['name'] for param in response.json()]
 
 def add_parameter(name, type=None, site=None):
+
     data = {'name': name, 'type': type, 'site': site}
     data = {k: v for k, v in data.items() if v is not None}
     response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers+{'Content-Type': 'application/json'})
+    return response.json()
+
+def add_parameters(params, type=None, site=None):
+
+    data = {'params': json.loads(params), 'type': type, 'site': site}
+    data = {k: v for k, v in data.items() if v is not None}
+    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers={'Content-Type': 'application/json'})
     return response.json()
 
 if __name__ == "__main__":
@@ -35,6 +71,7 @@ if __name__ == "__main__":
     parser.add_argument('--name', type=str, help='Name of the parameter to add')
     parser.add_argument('--types', type=str, help='Types of the parameter to add')
     parser.add_argument('--site', type=str, help='Site of the parameter is used')
+    parser.add_argument('-r', '--read', type=str, help='Path to the file containing parameters')
 
     args = parser.parse_args()
 
@@ -45,10 +82,16 @@ if __name__ == "__main__":
         for parameter in get_top_parameters(args.top):
             print(parameter)
     elif args.add:
-        if args.name :
+        if args.name and (not args.read or not args.r):
             type = args.type if args.type else None
             site = args.site if args.site else None
             print(add_parameter(args.name, type, site))
+        if args.read:
+            params = file_manager(args.read)
+            type = args.type if args.type else None
+            site = args.site if args.site else None
+            print(params)
+            print(add_parameters(params, type, site))
         else:
             print("You must provide --name when adding a parameter.")
     elif args.type:
