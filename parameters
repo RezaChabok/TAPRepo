@@ -59,7 +59,7 @@ def add_parameters(params, type=None, site=None):
 
     data = {'params': json.loads(params), 'type': type, 'site': site}
     data = {k: v for k, v in data.items() if v is not None}
-    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers={'Content-Type': 'application/json'})
+    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers+{'Content-Type': 'application/json'})
     return response.json()
 
 if __name__ == "__main__":
