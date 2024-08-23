@@ -4,7 +4,7 @@
 import argparse
 import requests
 import json
-
+import time
 
 base_url = 'https://taprepo.pythonanywhere.com'
 Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04=",
@@ -58,11 +58,30 @@ def add_parameter(name, type=None, site=None):
     return response.json()
 
 def add_parameters(params, type=None, site=None):
-
-    data = {'params': json.loads(params), 'type': type, 'site': site}
-    data = {k: v for k, v in data.items() if v is not None}
-    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers)
-    return response.json()
+    params = json.loads(params)
+    print(len(params), " param.")
+    if len(params) > 200:
+        for i in range(0, len(params), 200):
+            chunk = params[i:i + 200]
+            param = json.dumps(chunk, indent=4)
+            data = {'params': json.loads(param), 'type': type, 'site': site}
+            data = {k: v for k, v in data.items() if v is not None}
+            while True:    
+                try:
+                    response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers)
+                    break
+                except:
+                    print("error")
+                    time.sleep(1)
+            print(len(json.loads(param))+i, " parameter saved.", response.json())
+            
+    else:
+        # print(json.dumps(params, indent=4))
+        data = {'params': json.loads(params), 'type': type, 'site': site}
+        data = {k: v for k, v in data.items() if v is not None}
+        response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers)
+        print(len(json.loads(params)), " parameter saved.")
+        return response.json()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Interact with parameters API.')
@@ -91,8 +110,7 @@ if __name__ == "__main__":
         if args.read:
             params = file_manager(args.read)
             type = args.type if args.type else None
-            site = args.site if args.site else None
-            print(params)
+            site = args.site if args.site else None            
             print(add_parameters(params, type, site))
         else:
             print("You must provide --name when adding a parameter.")
