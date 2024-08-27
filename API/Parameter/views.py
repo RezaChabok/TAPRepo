@@ -9,6 +9,11 @@ import json
 
 from rest_framework.exceptions import ValidationError
 
+# def validate_site(address):
+#     site = Site.objects.filter(address = address).first()
+#     if site is None:raise ValidationError("The 'site' does not exist..")
+#     return site
+
 def validate_top(top):
     try:
         top = int(top)
@@ -34,6 +39,33 @@ class ParameterViewSet(viewsets.ModelViewSet):
     queryset = Parameter.objects.all()
     serializer_class = ParameterSerializer
     permission_classes = [AllowAny]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.queryset
+
+        # Use select_related or prefetch_related if applicable
+        queryset = queryset.prefetch_related('site', 'type')
+
+        # Combine filters
+        site = request.query_params.get('site')
+        type_name = request.query_params.get('type')
+        top = request.query_params.get('top')
+        # print(site, type_name, top)
+        if site and site != '' and site != 'None':
+            # site = validate_site(site)
+            queryset = queryset.filter(site__address__in=[site])
+
+        if type_name and type_name != '' and type_name != 'None':
+            # validate_type(type_name)
+            queryset = queryset.filter(type__name__in=[type_name])
+
+        if top and site != '' and top != 'None':
+            top = validate_top(top)
+            # queryset = queryset.filter(rank__lte=top)
+            queryset = queryset.order_by('-count')[:top]
+
+        self.queryset = queryset
+        return super().list(request, *args, **kwargs)
     
     def create(self, request, *args, **kwargs):
         params = request.data.get('params')
@@ -69,20 +101,20 @@ class ParameterViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(parameter)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'])
-    def get_top(self, request):
-        top = request.query_params.get('top')
-        top = validate_top(top)
-        parameters = Parameter.get_rank(top=top)
-        serializer = ParameterSerializer(parameters, many=True)
-        return Response(serializer.data)
+    # @action(detail=False, methods=['get'])
+    # def get_top(self, request):
+    #     top = request.query_params.get('top')
+    #     top = validate_top(top)
+    #     parameters = Parameter.get_rank(top=top)
+    #     serializer = ParameterSerializer(parameters, many=True)
+    #     return Response(serializer.data)
     
-    @action(detail=False, methods=['get'])
-    def get_by_type(self, request):
-        type_name = request.query_params.get('type')
-        validate_type(type_name)
-        parameters = Parameter.get_by_type(type_name=type_name)
-        serializer = ParameterSerializer(parameters, many=True)
-        return Response(serializer.data)
+    # @action(detail=False, methods=['get'])
+    # def get_by_type(self, request):
+    #     type_name = request.query_params.get('type')
+    #     validate_type(type_name)
+    #     parameters = Parameter.get_by_type(type_name=type_name)
+    #     serializer = ParameterSerializer(parameters, many=True)
+    #     return Response(serializer.data)
 
     

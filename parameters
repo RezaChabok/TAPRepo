@@ -7,6 +7,7 @@ import json
 import time
 
 base_url = 'https://taprepo.pythonanywhere.com'
+# base_url = 'http://127.0.0.1:8000'
 Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04=",
             'Content-Type': 'application/json'
             }
@@ -38,17 +39,17 @@ def file_manager(file_name):
 
 
 
-def get_all_parameters():
-    response = requests.get(f'{base_url}/parameters/', headers=Headers)
+def get_parameters(site, top, type):
+    response = requests.get(f'{base_url}/parameters/?site={site}&top={top}&type={type}', headers=Headers)
     return [param['name'] for param in response.json()]
 
-def get_top_parameters(top):
-    response = requests.get(f'{base_url}/parameters/get_top', params={'top': top}, headers=Headers)
-    return [param['name'] for param in response.json()]
+# def get_top_parameters(top):
+#     response = requests.get(f'{base_url}/parameters/get_top', params={'top': top}, headers=Headers)
+#     return [param['name'] for param in response.json()]
 
-def get_parameters_by_type(type_name):
-    response = requests.get(f'{base_url}/parameters/get_by_type', params={'type': type_name}, headers=Headers)
-    return [param['name'] for param in response.json()]
+# def get_parameters_by_type(type_name):
+#     response = requests.get(f'{base_url}/parameters/get_by_type', params={'type': type_name}, headers=Headers)
+#     return [param['name'] for param in response.json()]
 
 def add_parameter(name, type=None, site=None):
 
@@ -85,6 +86,7 @@ def add_parameters(params, type=None, site=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Interact with parameters API.')
+    parser.add_argument('--get', action='store_true', help='Get parameters')
     parser.add_argument('--all', action='store_true', help='Get all parameters')
     parser.add_argument('--top', type=int, help='Get top parameters')
     parser.add_argument('--type', type=str, help='Get/Set parameters type')
@@ -96,24 +98,25 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.all:
-        for parameter in get_all_parameters():
-            print(parameter)
-    elif args.top:
-        for parameter in get_top_parameters(args.top):
-            print(parameter)
-    elif args.add:
-        if args.name and (not args.read or not args.r):
+    if args.get:
+        if args.all:
+            for parameter in get_parameters():
+                print(parameter)
+        else:
+            top = args.top if args.top else None
             type = args.type if args.type else None
             site = args.site if args.site else None
-            print(add_parameter(args.name, type, site))
-        if args.read:
-            params = file_manager(args.read)
-            type = args.type if args.type else None
-            site = args.site if args.site else None            
-            print(add_parameters(params, type, site))
-        else:
-            print("You must provide --name when adding a parameter.")
-    elif args.type:
-        for parameter in get_parameters_by_type(args.type):
-            print(parameter)
+            for parameter in get_parameters(site, top, type):
+                print(parameter)
+    elif args.add:
+            if args.name and (not args.read or not args.r):
+                type = args.type if args.type else None
+                site = args.site if args.site else None
+                print(add_parameter(args.name, type, site))
+            if args.read:
+                params = file_manager(args.read)
+                type = args.type if args.type else None
+                site = args.site if args.site else None            
+                print(add_parameters(params, type, site))
+            else:
+                print("You must provide --name when adding a parameter.")
