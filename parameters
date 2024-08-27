@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     if args.get:
         if args.all:
-            for parameter in get_parameters():
+            for parameter in get_parameters(None, None, None):
                 print(parameter)
         else:
             top = args.top if args.top else None
