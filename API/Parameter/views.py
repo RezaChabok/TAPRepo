@@ -4,7 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from .models import Parameter, Type, Site
-from .serializers import ParameterSerializer, TypeSerializer
+from .serializers import ParameterSerializer, TypeSerializer, QuerysetListSerializer
 import json
 
 from rest_framework.exceptions import ValidationError
@@ -32,7 +32,7 @@ class ParameterViewSet(viewsets.ModelViewSet):
         viewsets (Parameter): All useful parameter used in requests.
 
     Returns:
-        Parameters: Al Parameters saved in DB.
+        Parameters: All Parameters saved in DB.
     """
     
     
@@ -64,8 +64,10 @@ class ParameterViewSet(viewsets.ModelViewSet):
             # queryset = queryset.filter(rank__lte=top)
             queryset = queryset.order_by('-count')[:top]
 
-        self.queryset = queryset
-        return super().list(request, *args, **kwargs)
+        self.queryset = queryset.values_list('name', flat=True)
+        serializer = QuerysetListSerializer({'queryset': self.queryset})
+        return Response(serializer.data.get('queryset'))
+        # return super().list(request, *args, **kwargs)
     
     def create(self, request, *args, **kwargs):
         params = request.data.get('params')

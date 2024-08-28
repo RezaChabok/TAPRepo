@@ -6,8 +6,8 @@ import requests
 import json
 import time
 
-base_url = 'https://taprepo.pythonanywhere.com'
-# base_url = 'http://127.0.0.1:8000'
+# base_url = 'https://taprepo.pythonanywhere.com'
+base_url = 'http://127.0.0.1:8000'
 Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04=",
             'Content-Type': 'application/json'
             }
@@ -41,7 +41,7 @@ def file_manager(file_name):
 
 def get_parameters(site, top, type):
     response = requests.get(f'{base_url}/parameters/?site={site}&top={top}&type={type}', headers=Headers)
-    return [param['name'] for param in response.json()]
+    return  response.json()
 
 # def get_top_parameters(top):
 #     response = requests.get(f'{base_url}/parameters/get_top', params={'top': top}, headers=Headers)

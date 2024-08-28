@@ -3,6 +3,13 @@ from rest_framework import serializers
 from .models import Parameter, Type, Site
 
 
+
+class QuerysetListSerializer(serializers.Serializer):
+    queryset = serializers.ListField(
+        child=serializers.CharField()
+    )
+
+
 class SiteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Site
