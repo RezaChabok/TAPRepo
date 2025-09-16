@@ -6,8 +6,8 @@ import requests
 import json
 import time
 
-# base_url = 'https://taprepo.pythonanywhere.com'
-base_url = 'http://127.0.0.1:8000'
+base_url = 'https://taprepo.pythonanywhere.com'
+# base_url = 'http://127.0.0.1:8000'
 Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04=",
             'Content-Type': 'application/json'
             }
@@ -33,7 +33,6 @@ def file_manager(file_name):
     
     # Convert the list of dictionaries to a JSON string
     result = json.dumps(parameters)
-    
     return result
 
 
@@ -78,10 +77,10 @@ def add_parameters(params, type=None, site=None):
             
     else:
         # print(json.dumps(params, indent=4))
-        data = {'params': json.loads(params), 'type': type, 'site': site}
+        data = {'params': params, 'type': type, 'site': site}
         data = {k: v for k, v in data.items() if v is not None}
         response = requests.post(f'{base_url}/parameters/', data=json.dumps(data), headers=Headers)
-        print(len(json.loads(params)), " parameter saved.")
+        print(len(params), " parameter saved.")
         return response.json()
 
 if __name__ == "__main__":
