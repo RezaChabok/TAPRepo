@@ -23,9 +23,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-)0xd9igmhm_(-=wih%qq0#+j-$fvm9*v8vujrs^vb$jdvct2*f'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['ُtaprepo.pythonanywhere.com', '127.0.0.1']
+# ALLOWED_HOSTS = ['ُtaprepo.pythonanywhere.com']
+ALLOWED_HOSTS = ['*']
+
 # CSRF_TRUSTED_ORIGINS = ['moz-extension://0f2ffc5e-6ee6-44d4-8ab1-8a2a8cdcae3f']
 
 
@@ -147,7 +149,7 @@ STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        
+
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
