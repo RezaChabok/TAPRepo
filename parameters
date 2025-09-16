@@ -6,8 +6,8 @@ import requests
 import json
 import time
 
-# base_url = 'https://taprepo.pythonanywhere.com'
-base_url = 'http://127.0.0.1:8000'
+base_url = 'https://taprepo.pythonanywhere.com'
+# base_url = 'http://127.0.0.1:8000'
 Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04=",
             'Content-Type': 'application/json'
             }
