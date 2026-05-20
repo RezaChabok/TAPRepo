@@ -3,20 +3,43 @@
 import argparse
 import requests
 import json
-#auth : Authorization: Basic YmFkc2VjdG9yOkJzaXRQQ04=
+import os
 
-base_url = 'https://taprepo.pythonanywhere.com'
-Headers = { "Authorization" : "Basic YmFkc2VjdG9yOkJzaXRQQ04="}
+BASE_URL = os.environ.get('TAPREPO_URL', 'http://127.0.0.1:8000')
+USERNAME = os.environ.get('TAPREPO_USER', 'admin')
+PASSWORD = os.environ.get('TAPREPO_PASS', '#')
+
+def get_access_token():
+    response = requests.post(f'{BASE_URL}/api/token/', json={
+        'username': USERNAME,
+        'password': PASSWORD
+    })
+    if response.status_code == 200:
+        return response.json().get('access')
+    else:
+        raise Exception(f"Failed to get token: {response.text}")
+
+def get_headers():
+    token = get_access_token()
+    return {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
 def get_all_subdomains():
-    response = requests.get(f'{base_url}/targets/all_subdomains', headers=Headers)
-    return [subdomain['address'] for subdomain in response.json()]
+    response = requests.get(f'{BASE_URL}/targets/all_subdomains', headers=get_headers())
+    data = response.json()
+    if isinstance(data, dict) and 'detail' in data:
+        print("Error:", data['detail'])
+        return []
+    return [subdomain['address'] for subdomain in data]
 
 def get_target(address):
-    response = requests.get(f'{base_url}/targets/', params={'address': address}, headers=Headers)
+    response = requests.get(f'{BASE_URL}/targets/', params={'address': address}, headers=get_headers())
     return response.json()
 
 def get_target_ips(address):
-    response = requests.get(f'{base_url}/targets/target_details', params={'address': address}, headers=Headers)
+    response = requests.get(f'{BASE_URL}/targets/target_details', params={'address': address}, headers=get_headers())
     return [ip['ip'] for ip in response.json()['ips']]
 
 def add_target(address, name=None, subdomains=None, ips=None, cidrs=None, asns=None, behind_cdn=None, vulnerabilities=None):
@@ -30,9 +53,8 @@ def add_target(address, name=None, subdomains=None, ips=None, cidrs=None, asns=N
         'behind_cdn': behind_cdn,
         'vulnerabilities': vulnerabilities
     }
-    # Remove None values from data
     data = {k: v for k, v in data.items() if v is not None}
-    response = requests.post(f'{base_url}/targets/', data=json.dumps(data), headers=Headers+{'Content-Type': 'application/json'})
+    response = requests.post(f'{BASE_URL}/targets/', json=data, headers=get_headers())
     return response.json()
 
 if __name__ == "__main__":
