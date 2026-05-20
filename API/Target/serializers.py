@@ -22,10 +22,20 @@ class ASNSerializer(serializers.ModelSerializer):
         model = ASN
         fields = ['name']
 
+
 class VulnerabilitySerializer(serializers.ModelSerializer):
+    cvss = serializers.DecimalField(max_digits=3, decimal_places=1, 
+                                    allow_null=True, required=False)
+    report = serializers.URLField(allow_null=True, required=False)
+
     class Meta:
         model = Vulnerability
-        fields = ['name']
+        fields = ['name', 'attack_vector', 'description', 'cvss', 'write_up', 'report']
+        extra_kwargs = {
+            'description': {'required': False, 'allow_null': True},
+            'write_up': {'required': False, 'allow_null': True},
+        }
+
 
 class SiteSerializer(serializers.ModelSerializer):
     subdomains = SubdomainSerializer(many=True, read_only=True)
@@ -50,31 +60,3 @@ class TargetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Target
         fields = ['address', 'name', 'SubSite', 'subdomains', 'ips', 'cidrs', 'asns', 'behind_cdn', 'vulnerabilities']
-    
-    # def create(self, validated_data):
-    #     # Extract fields from validated_data
-    #     address = validated_data.pop('address')
-    #     name = validated_data.pop('name', None)
-    #     subdomains = validated_data.pop('subdomains', [])
-    #     ips = validated_data.pop('ips', [])
-    #     cidrs = validated_data.pop('cidrs', [])
-    #     asns = validated_data.pop('asns', [])
-    #     behind_cdn = validated_data.pop('behind_cdn', None)
-    #     vulnerabilities = validated_data.pop('vulnerabilities', [])
-
-    #     # Create the new target
-    #     target = Target.objects.create(address=address, name=name, behind_cdn=behind_cdn)
-
-    #     # Add the many-to-many fields
-    #     for subdomain in subdomains:
-    #         target.subdomains.add(subdomain)
-    #     for ip in ips:
-    #         target.ips.add(ip)
-    #     for cidr in cidrs:
-    #         target.cidrs.add(cidr)
-    #     for asn in asns:
-    #         target.asns.add(asn)
-    #     for vulnerability in vulnerabilities:
-    #         target.vulnerabilities.add(vulnerability)
-
-    #     return target

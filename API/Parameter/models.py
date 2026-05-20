@@ -7,28 +7,26 @@ class Type(models.Model):
         return f"{self.name}"
 
 
-class Site(models.Model):
+class ParameterSite(models.Model):
     address = models.TextField(unique=True)
     def __str__(self):
         return f"{self.address}"
 
+
 class Parameter(models.Model):
     class Meta:
-        ordering = ['-count']        
-                
+        ordering = []
+
     name = models.TextField(unique=True)
     type = models.ManyToManyField(Type, blank=True)
-    site = models.ManyToManyField(Site, blank=True)
-    count = models.IntegerField()
+    site = models.ManyToManyField(ParameterSite, blank=True)
+
+    @property
+    def count(self):
+        return self.site.count()
 
     def __str__(self):
-        return f"{self.name}"
-
-    def save(self, *args, **kwargs):
-        try:
-            self.count = self.site.count()
-        except:self.count = 0
-        super(Parameter, self).save(*args, **kwargs)
+        return self.name
 
     @staticmethod
     def get_rank(top: int):
