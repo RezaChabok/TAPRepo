@@ -55,7 +55,7 @@ Create a `.env` file in the project root (see `.env.example`):
 ```ini
 SECRET_KEY='your-django-secret-key-here'
 DJANGO_DEBUG=False
-ALLOWED_HOSTS='taprepo.pythonanywhere.com,127.0.0.1,localhost'
+ALLOWED_HOSTS='127.0.0.1,localhost'
 ```
 
 Then apply migrations and create a superuser:
