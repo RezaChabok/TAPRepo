@@ -1,5 +1,8 @@
 # TAPRepo - Target & Attack-Parameter Repository
 
+**📄 [نسخهٔ فارسی (Persian)](README_fa.md)**
+
+
 A secure, personal API toolkit for penetration testers. Built with Django REST
 Framework, TAPRepo stores and categorizes vulnerable targets, suspicious
 parameters, and discovered vulnerabilities during web application security
